@@ -1,32 +1,20 @@
-# React + TypeScript + Vite
+# Foresight Demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A product catalog demo showcasing [ForesightJS](https://foresightjs.com/) — a library that predicts user intent from mouse movement, keyboard navigation, and scroll behavior to prefetch data before the user clicks.
 
-Currently, two official plugins are available:
+Built with React 19, TypeScript, Vite, and Tailwind CSS v4.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## How it works
 
-## React Compiler
+1. Products are fetched from [DummyJSON](https://dummyjson.com/) and displayed as a card grid.
+2. Each card is registered with ForesightJS, which tracks cursor movement and predicts which card the user is heading toward.
+3. When ForesightJS detects an intent, it prefetches the product detail ~200-400ms before the click.
+4. On click, the detail panel slides in from the right — if prefetched, the content appears instantly; otherwise it fetches normally with a skeleton loader.
+5. The simulated `?delay=800ms` on the API makes the prefetch timing clearly observable.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting started
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ForesightManager } from 'js.foresight'
 import type { Product, ProductDetail } from './types'
 import ProductCard from './ProductCard'
 import ProductDetailPanel from './ProductDetailPanel'
@@ -9,6 +10,13 @@ export default function App() {
   const [panelOpen, setPanelOpen] = useState(false)
   const [selectedDetail, setSelectedDetail] = useState<ProductDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  const cache = useRef<Map<number, ProductDetail>>(new Map())
+
+  // Initialize ForesightJS once for the whole app.
+  // This starts tracking mouse movement and tab navigation globally.
+  useEffect(() => {
+    ForesightManager.initialize()
+  }, [])
 
   useEffect(() => {
     fetch('https://dummyjson.com/products?limit=20')
@@ -16,19 +24,28 @@ export default function App() {
       .then(data => setProducts(data.products))
   }, [])
 
-  function handleCardClick(id: number) {
+  function handlePrefetched(id: number, data: ProductDetail) {
+    cache.current.set(id, data)
+  }
+
+  async function handleCardClick(id: number) {
     if (id === selectedId) return
     setSelectedId(id)
     setPanelOpen(true)
-    setDetailLoading(true)
-    setSelectedDetail(null)
 
-    fetch(`https://dummyjson.com/products/${id}?delay=800`)
-      .then(r => r.json())
-      .then(data => {
-        setSelectedDetail(data)
-        setDetailLoading(false)
-      })
+    if (cache.current.has(id)) {
+      // ForesightJS already fetched this — open instantly
+      setSelectedDetail(cache.current.get(id)!)
+    } else {
+      // User clicked before prefetch finished — fetch normally
+      setDetailLoading(true)
+      const res = await fetch(
+        "https://dummyjson.com/products/" + id + "?delay=800"
+      )
+      const data = await res.json()
+      setSelectedDetail(data)
+      setDetailLoading(false)
+    }
   }
 
   function handleClose() {
@@ -60,6 +77,7 @@ export default function App() {
               key={product.id}
               product={product}
               onClick={handleCardClick}
+              onPrefetched={handlePrefetched}
             />
           ))}
         </div>
